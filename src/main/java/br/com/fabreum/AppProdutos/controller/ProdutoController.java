@@ -6,6 +6,7 @@ import br.com.fabreum.AppProdutos.service.ProdutosService;
 import br.com.fabreum.AppProdutos.service.dto.ProdutoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,18 +28,31 @@ public class ProdutoController {
     private final ProdutosRepository produtosRepository;
     private final ProdutosService produtosService;
 
+    /**
+     * Cria um novo produto.
+     * Apenas usuários com o papel de ADMIN ou SELLER podem acessar este endpoint.
+     */
     @PostMapping("produto")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public ResponseEntity<Produtos> criaProduto(@RequestBody Produtos produto) {
         Produtos saved = produtosRepository.save(produto);
         return ResponseEntity.ok(saved);
     }
 
+    /**
+     * Lista todos os produtos.
+     * Acessível por qualquer usuário autenticado (ADMIN, SELLER, CUSTOMER).
+     */
     @GetMapping
     public ResponseEntity<List<Produtos>> listaProdutos() {
         List<Produtos> produtos = produtosRepository.findAll();
         return ResponseEntity.ok(produtos);
     }
 
+    /**
+     * Busca um produto pelo ID.
+     * Acessível por qualquer usuário autenticado.
+     */
     @GetMapping("{id}")
     public ResponseEntity<Produtos> listaProdutoPorId(@PathVariable Long id) {
         Produtos produto = produtosRepository.findById(id).orElseThrow();
@@ -47,6 +61,7 @@ public class ProdutoController {
 
     /**
      * Exemplo de retorno de um Record.
+     * Acessível por qualquer usuário autenticado.
      * @param id
      * @return
      */
@@ -63,23 +78,25 @@ public class ProdutoController {
         return ResponseEntity.ok(produtoDto);
     }
 
+    /**
+     * Atualiza um produto existente.
+     * Apenas usuários com o papel de ADMIN ou SELLER podem acessar este endpoint.
+     * Uma lógica mais complexa poderia ser adicionada para que um SELLER só possa editar os próprios produtos.
+     */
     @PutMapping("atualiza")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public ResponseEntity<Optional<Produtos>> atualizaProduto(@RequestBody Produtos produto) {
         final var produtoExistente = produtosService.atualizaProduto(produto);
         return ResponseEntity.ok(produtoExistente);
     }
 
+    /**
+     * Deleta um produto.
+     * Apenas usuários com o papel de ADMIN podem acessar este endpoint.
+     */
     @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletaProduto(@PathVariable Long id) {
-        //Exemplo construindo Record
-        final var p = new ProdutoDto(1L, "dfs", "sdfa", new BigDecimal("25.6"));
-        //Exemplo construindo Builder do record
-        final var p2 = ProdutoDto.builder()
-                .id(1L)
-                .codigoBarras("dfs")
-                .nome("sdfa")
-                .preco(new BigDecimal("25.6"))
-                .build();
         produtosRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
