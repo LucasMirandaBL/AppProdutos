@@ -3,8 +3,10 @@ package br.com.fabreum.AppProdutos.controller;
 import br.com.fabreum.AppProdutos.controller.dto.JwtAuthenticationResponse;
 import br.com.fabreum.AppProdutos.controller.dto.LoginRequest;
 import br.com.fabreum.AppProdutos.controller.dto.RefreshTokenRequest;
+import br.com.fabreum.AppProdutos.controller.dto.RegistroRequest;
 import br.com.fabreum.AppProdutos.model.Usuario;
 import br.com.fabreum.AppProdutos.security.JwtTokenProvider;
+import br.com.fabreum.AppProdutos.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,15 +16,35 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controlador responsável pelos endpoints de autenticação.
+ * Controlador responsável pelos endpoints de autenticação e registro.
  */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final UsuarioService usuarioService;
+
+    /**
+     * Endpoint para registrar um novo usuário.
+     * Este endpoint é público.
+     *
+     * @param registroRequest DTO com dados para registro.
+     * @return Uma mensagem de sucesso.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegistroRequest registroRequest) {
+        try {
+            Usuario usuario = usuarioService.registrarUsuario(registroRequest);
+            // Por segurança, não retornamos a senha do usuário.
+            usuario.setPassword(null);
+            return ResponseEntity.ok(usuario);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     /**
      * Endpoint para autenticar um usuário e retornar um token JWT.
@@ -33,7 +55,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
 
-        // 1. Cria um objeto de autenticação com o username e password fornecidos.
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -41,13 +62,8 @@ public class AuthController {
                 )
         );
 
-        // 2. Define a autenticação no contexto de segurança do Spring.
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // 3. Gera o token JWT.
         String jwt = tokenProvider.generateToken(authentication);
-
-        // 4. Retorna o token na resposta.
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 
@@ -62,13 +78,9 @@ public class AuthController {
     public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
 
-        // 1. Valida o refresh token
         if (tokenProvider.validateToken(refreshToken)) {
-            // 2. Extrai o username do refresh token
             String username = tokenProvider.getUsernameFromJWT(refreshToken);
-            // 3. Gera um novo token de acesso
             String newAccessToken = tokenProvider.generateTokenFromUsername(username);
-            // 4. Retorna o novo token
             return ResponseEntity.ok(new JwtAuthenticationResponse(newAccessToken));
         } else {
             return ResponseEntity.badRequest().body("Invalid Refresh Token");
@@ -82,12 +94,9 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
-        // O Spring Security, através do nosso filtro, já colocou o usuário autenticado no contexto.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Usuario) {
             Usuario currentUser = (Usuario) authentication.getPrincipal();
-            // É uma boa prática não retornar a senha, mesmo que esteja hasheada.
-            // Poderíamos criar um DTO específico para o usuário aqui.
             currentUser.setPassword(null);
             return ResponseEntity.ok(currentUser);
         }

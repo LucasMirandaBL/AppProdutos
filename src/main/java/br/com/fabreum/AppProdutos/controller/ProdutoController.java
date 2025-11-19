@@ -1,22 +1,15 @@
 package br.com.fabreum.AppProdutos.controller;
 
 import br.com.fabreum.AppProdutos.model.Produtos;
-import br.com.fabreum.AppProdutos.repository.ProdutosRepository;
+import br.com.fabreum.AppProdutos.repository.ProductRepository;
 import br.com.fabreum.AppProdutos.service.ProdutosService;
 import br.com.fabreum.AppProdutos.service.dto.ProdutoDto;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,13 +18,14 @@ import java.util.Optional;
 @RequestMapping("v1/produtos/")
 public class ProdutoController {
 
-    private final ProdutosRepository produtosRepository;
+    private final ProductRepository produtosRepository;
     private final ProdutosService produtosService;
 
     /**
      * Cria um novo produto.
      * Apenas usuários com o papel de ADMIN ou SELLER podem acessar este endpoint.
      */
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("produto")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
     public ResponseEntity<Produtos> criaProduto(@RequestBody Produtos produto) {
@@ -70,9 +64,9 @@ public class ProdutoController {
         ProdutoDto produtoDto = produtosRepository.findByIdDto(id);
 
         final var produto = new Produtos();
-        produto.setNome(produtoDto.nome());
-        produto.setPreco(produtoDto.preco());
-        produto.setCodigoBarras(produtoDto.codigoBarras());
+        produto.setName(produtoDto.nome());
+        produto.setPrice(produtoDto.preco());
+        produto.setSku(produtoDto.codigoBarras());
         produtosRepository.saveAndFlush(produto);
 
         return ResponseEntity.ok(produtoDto);

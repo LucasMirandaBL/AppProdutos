@@ -1,7 +1,9 @@
 package br.com.fabreum.AppProdutos;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class AppProdutosApplication {
@@ -10,4 +12,8 @@ public class AppProdutosApplication {
 		SpringApplication.run(AppProdutosApplication.class, args);
 	}
 
+	@Bean
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
+	}
 }
