@@ -6,18 +6,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface ProdutosRepository extends JpaRepository<Produtos, Long> {
+public interface ProductRepository extends JpaRepository<Produtos, Long> {
 
     //Projection
     @Query(nativeQuery = true, value = """
             SELECT p.id, 
-            p.codigo_barras AS codigoBarras, 
-            p.nome, 
-            p.preco
-            FROM tb_produtos p 
+            p.sku AS sku, 
+            p.name, 
+            p.price
+            FROM products p 
             WHERE p.id = :id
             """)
     ProdutoDto findByIdDto(long id);
+
+    List<Produtos> findByStockQuantityLessThanEqual(int quantity);
 }
 
