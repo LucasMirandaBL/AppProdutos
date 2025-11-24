@@ -1,13 +1,11 @@
 package br.com.fabreum.AppProdutos.config;
 
-import br.com.fabreum.AppProdutos.model.Role;
-import br.com.fabreum.AppProdutos.model.Usuario;
-import br.com.fabreum.AppProdutos.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,40 +13,40 @@ import java.util.Set;
  * Útil para testes e demonstração.
  */
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final WebClient webClient;
+
+    public DataInitializer(WebClient.Builder webClientBuilder, @Value("${auth.api.base-url}") String authApiBaseUrl) {
+        this.webClient = webClientBuilder.baseUrl(authApiBaseUrl).build();
+    }
 
     @Override
     public void run(String... args) throws Exception {
-        // Cria o usuário ADMIN se ele não existir
-        if (usuarioRepository.findByUsername("admin").isEmpty()) {
-            Usuario admin = new Usuario();
-            admin.setUsername("admin");
-            // A senha deve ser sempre codificada antes de ser salva
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRoles(Set.of(Role.ROLE_ADMIN));
-            usuarioRepository.save(admin);
-        }
+        // Criar usuário ADMIN na API de autenticação
+        createUserInAuthService("admin", "admin123", Set.of("ROLE_ADMIN"));
+        // Criar usuário SELLER na API de autenticação
+        createUserInAuthService("seller", "seller123", Set.of("ROLE_SELLER"));
+        // Criar usuário CUSTOMER na API de autenticação
+        createUserInAuthService("customer", "customer123", Set.of("ROLE_CUSTOMER"));
+    }
 
-        // Cria o usuário SELLER se ele não existir
-        if (usuarioRepository.findByUsername("seller").isEmpty()) {
-            Usuario seller = new Usuario();
-            seller.setUsername("seller");
-            seller.setPassword(passwordEncoder.encode("seller123"));
-            seller.setRoles(Set.of(Role.ROLE_SELLER));
-            usuarioRepository.save(seller);
-        }
+    private void createUserInAuthService(String username, String password, Set<String> roles) {
+        // Construct the request body
+        Map<String, Object> userCreationRequest = Map.of(
+            "username", username,
+            "password", password,
+            "roles", roles // Assuming the external API accepts a list of roles
+        );
 
-        // Cria o usuário CUSTOMER se ele não existir
-        if (usuarioRepository.findByUsername("customer").isEmpty()) {
-            Usuario customer = new Usuario();
-            customer.setUsername("customer");
-            customer.setPassword(passwordEncoder.encode("customer123"));
-            customer.setRoles(Set.of(Role.ROLE_CUSTOMER));
-            usuarioRepository.save(customer);
-        }
+        // Make the POST request to the external auth service
+        webClient.post()
+            .uri("/auth/register") // Assuming /users/register is the endpoint for user creation
+            .bodyValue(userCreationRequest)
+            .retrieve()
+            .bodyToMono(String.class) // Assuming a simple string response or success indicator
+            .doOnSuccess(response -> System.out.println("User " + username + " created successfully in auth service."))
+            .doOnError(e -> System.err.println("Failed to create user " + username + " in auth service: " + e.getMessage()))
+            .block(); // Block for simplicity in a CommandLineRunner, consider async in production
     }
 }

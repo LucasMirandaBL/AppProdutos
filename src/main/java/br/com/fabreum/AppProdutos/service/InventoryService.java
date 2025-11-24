@@ -22,7 +22,7 @@ public class InventoryService {
     private InventoryTransactionRepository transactionRepository;
 
     @Autowired
-    private UsuarioService usuarioService; // Assumindo que o UsuarioService possa fornecer o usuário atual
+    private UsuarioService usuarioService;
 
     /**
      * Adiciona uma quantidade ao estoque de um produto.
@@ -83,7 +83,7 @@ public class InventoryService {
         transaction.setDelta(delta);
         transaction.setReason(reason);
         transaction.setReferenceId(referenceId);
-        transaction.setCreatedBy(usuarioService.getCurrentUsername()); // This needs to be implemented in UsuarioService
+        transaction.setCreatedBy(usuarioService.getCurrentUsername());
         transactionRepository.save(transaction);
     }
 }
