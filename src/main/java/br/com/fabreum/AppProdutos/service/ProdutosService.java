@@ -15,14 +15,14 @@ public class ProdutosService {
 
     private final ProductRepository produtosRepository;
 
-    public Optional<Produtos> atualizaProduto(Produtos produto) {
-        log.info("Atualizando produto: {}", produto);
-        final var produtoExistente = produtosRepository.findById(produto.getId());
+    public Optional<Produtos> atualizaProduto(Long id, br.com.fabreum.AppProdutos.controller.dto.ProdutoDto produtoDto) {
+        log.info("Atualizando produto: {}", produtoDto);
+        final var produtoExistente = produtosRepository.findById(id);
         produtoExistente.ifPresent(p -> {
-            produto.setSku(p.getSku());
-            produto.setName(p.getName());
-            produto.setPrice(p.getPrice());
-            produtosRepository.saveAndFlush(produto);
+            p.setName(produtoDto.getName());
+            p.setDescription(produtoDto.getDescription());
+            p.setPrice(produtoDto.getPrice());
+            produtosRepository.saveAndFlush(p);
         });
         return produtoExistente;
     }

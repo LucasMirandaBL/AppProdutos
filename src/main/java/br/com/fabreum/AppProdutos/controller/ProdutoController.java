@@ -1,9 +1,9 @@
 package br.com.fabreum.AppProdutos.controller;
 
+import br.com.fabreum.AppProdutos.controller.dto.ProdutoDto;
 import br.com.fabreum.AppProdutos.model.Produtos;
 import br.com.fabreum.AppProdutos.repository.ProductRepository;
 import br.com.fabreum.AppProdutos.service.ProdutosService;
-import br.com.fabreum.AppProdutos.service.dto.ProdutoDto;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("v1/produtos/")
+@RequestMapping("api/v1/produtos/")
 public class ProdutoController {
 
     private final ProductRepository produtosRepository;
@@ -28,7 +28,12 @@ public class ProdutoController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("produto")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
-    public ResponseEntity<Produtos> criaProduto(@RequestBody Produtos produto) {
+    public ResponseEntity<Produtos> criaProduto(@RequestBody ProdutoDto produtoDto) {
+        Produtos produto = new Produtos();
+        produto.setName(produtoDto.getName());
+        produto.setDescription(produtoDto.getDescription());
+        produto.setPrice(produtoDto.getPrice());
+        produto.setSku("");
         Produtos saved = produtosRepository.save(produto);
         return ResponseEntity.ok(saved);
     }
@@ -61,14 +66,11 @@ public class ProdutoController {
      */
     @GetMapping("/dto/{id}")
     public ResponseEntity<ProdutoDto> listaProdutoDtoPorId(@PathVariable Long id) {
-        ProdutoDto produtoDto = produtosRepository.findByIdDto(id);
-
-        final var produto = new Produtos();
-        produto.setName(produtoDto.nome());
-        produto.setPrice(produtoDto.preco());
-        produto.setSku(produtoDto.codigoBarras());
-        produtosRepository.saveAndFlush(produto);
-
+        Produtos produto = produtosRepository.findById(id).orElseThrow();
+        ProdutoDto produtoDto = new ProdutoDto();
+        produtoDto.setName(produto.getName());
+        produtoDto.setDescription(produto.getDescription());
+        produtoDto.setPrice(produto.getPrice());
         return ResponseEntity.ok(produtoDto);
     }
 
@@ -77,10 +79,10 @@ public class ProdutoController {
      * Apenas usuários com o papel de ADMIN ou SELLER podem acessar este endpoint.
      * Uma lógica mais complexa poderia ser adicionada para que um SELLER só possa editar os próprios produtos.
      */
-    @PutMapping("atualiza")
+    @PutMapping("atualiza/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SELLER')")
-    public ResponseEntity<Optional<Produtos>> atualizaProduto(@RequestBody Produtos produto) {
-        final var produtoExistente = produtosService.atualizaProduto(produto);
+    public ResponseEntity<Optional<Produtos>> atualizaProduto(@PathVariable Long id, @RequestBody ProdutoDto produto) {
+        final var produtoExistente = produtosService.atualizaProduto(id, produto);
         return ResponseEntity.ok(produtoExistente);
     }
 
