@@ -26,10 +26,10 @@ public class UsuarioService {
         }
 
         return webClient.get()
-                .uri("/users/by-username/{username}", username)
+                .uri("auth/users/by-username/{username}", username)
                 .retrieve()
                 .bodyToMono(UserDTO.class)
-                .block(); // block() for simplicity, in a real app consider async
+                .block();
     }
 
     public Long getCurrentUserId() {
@@ -39,6 +39,11 @@ public class UsuarioService {
 
     public String getCurrentUsername() {
         UserDTO user = getAuthenticatedUser();
-        return (user != null) ? user.getUsername() : null;
+        return (user != null) ? user.getEmail() : null;
+    }
+
+    public String getCurrentname() {
+        UserDTO user = getAuthenticatedUser();
+        return (user != null) ? user.getNome() : null;
     }
 }

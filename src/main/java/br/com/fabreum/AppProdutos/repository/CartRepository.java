@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
-    // Encontra um carrinho pelo ID do usuário. Optional<> é usado para evitar NullPointerExceptions.
     Optional<Cart> findByUserId(Long userId);
 }

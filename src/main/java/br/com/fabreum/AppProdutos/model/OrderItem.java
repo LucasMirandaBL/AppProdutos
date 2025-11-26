@@ -16,5 +16,5 @@ public class OrderItem {
     private int quantity;
 
     @Column(nullable = false)
-    private BigDecimal priceSnapshot; // O mesmo conceito do CartItem.
+    private BigDecimal priceSnapshot;
 }

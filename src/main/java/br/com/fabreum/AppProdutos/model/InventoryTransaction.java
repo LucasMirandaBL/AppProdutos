@@ -18,16 +18,14 @@ public class InventoryTransaction {
     @Column(nullable = false)
     private Long productId;
 
-    // 'delta' representa a mudança na quantidade. Pode ser positivo (entrada) ou negativo (saída).
     private int delta;
 
-    @Enumerated(EnumType.STRING) // Grava o nome do enum ('ENTRADA', 'SAIDA') no banco, que é mais legível.
+    @Enumerated(EnumType.STRING)
     private InventoryTransactionReason reason;
 
-    // ID de referência, como o ID do pedido que causou a saída de estoque.
     private String referenceId;
 
-    private String createdBy; // Quem realizou a transação.
+    private String createdBy;
 
     @CreationTimestamp
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

@@ -28,10 +28,6 @@ public class OrderService {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Cria um pedido a partir do carrinho do usuário.
-     * Esta é uma operação crítica e, portanto, transacional.
-     */
     @Transactional
     public Order createOrder(String shippingAddress) {
         Long userId = usuarioService.getCurrentUserId();
@@ -49,29 +45,25 @@ public class OrderService {
         order.setDiscount(cart.getDiscount());
         order.setFreight(cart.getFreight());
 
-        // Converte CartItems em OrderItems e associa ao pedido.
         List<OrderItem> orderItems = cart.getItems().stream().map(cartItem -> {
             OrderItem orderItem = new OrderItem();
             orderItem.setProductId(cartItem.getProductId());
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPriceSnapshot(cartItem.getPriceSnapshot());
 
-            // Reduz o estoque para cada item do pedido.
             inventoryService.removeStock(
                 cartItem.getProductId(),
                 cartItem.getQuantity(),
                 InventoryTransactionReason.SAIDA,
-                "ORDER-" + order.getId() // Referência será nula na primeira vez, mas ok.
+                "ORDER-" + order.getId()
             );
             return orderItem;
         }).collect(Collectors.toList());
 
         order.setItems(orderItems);
 
-        // Salva o pedido.
         Order savedOrder = orderRepository.save(order);
 
-        // Limpa o carrinho após o checkout.
         cart.getItems().clear();
         cart.setTotal(java.math.BigDecimal.ZERO);
         cart.setDiscount(java.math.BigDecimal.ZERO);
@@ -97,14 +89,12 @@ public class OrderService {
     public Order cancelOrder(Long id) {
         Order order = getOrderById(id);
 
-        // Regra de negócio: só pode cancelar pedidos com status CREATED ou PAID.
         if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.PAID) {
             throw new IllegalStateException("Não é possível cancelar um pedido que já foi enviado ou entregue.");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
 
-        // Devolve os itens ao estoque.
         for (OrderItem item : order.getItems()) {
             inventoryService.addStock(
                 item.getProductId(),

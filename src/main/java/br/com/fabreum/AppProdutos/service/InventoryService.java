@@ -24,11 +24,6 @@ public class InventoryService {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Adiciona uma quantidade ao estoque de um produto.
-     * @Transactional garante que toda a operação seja atômica. Se algo falhar,
-     * nenhuma alteração será salva no banco de dados.
-     */
     @Transactional
     public Produtos addStock(Long productId, int quantity, InventoryTransactionReason reason, String referenceId) {
         Produtos product = productRepository.findById(productId)
@@ -40,9 +35,6 @@ public class InventoryService {
         return productRepository.save(product);
     }
 
-    /**
-     * Remove uma quantidade do estoque de um produto.
-     */
     @Transactional
     public Produtos removeStock(Long productId, int quantity, InventoryTransactionReason reason, String referenceId) {
         Produtos product = productRepository.findById(productId)
@@ -55,10 +47,8 @@ public class InventoryService {
         product.setStockQuantity(product.getStockQuantity() - quantity);
         createTransaction(product, -quantity, reason, referenceId); // Delta negativo
 
-        // Lógica de aviso de estoque baixo
-        if (product.getStockQuantity() <= 5) { // Limite de estoque baixo (pode ser configurável)
+        if (product.getStockQuantity() <= 5) {
             System.out.println("ALERTA: Estoque baixo para o produto " + product.getName() + "! Quantidade atual: " + product.getStockQuantity());
-            // Em um sistema real, isso poderia enviar um email, uma notificação, etc.
         }
 
         return productRepository.save(product);
@@ -74,9 +64,6 @@ public class InventoryService {
         return transactionRepository.findByProductId(productId);
     }
 
-    /**
-     * Método auxiliar para criar e salvar uma transação de estoque.
-     */
     private void createTransaction(Produtos product, int delta, InventoryTransactionReason reason, String referenceId) {
         InventoryTransaction transaction = new InventoryTransaction();
         transaction.setProductId(product.getId());

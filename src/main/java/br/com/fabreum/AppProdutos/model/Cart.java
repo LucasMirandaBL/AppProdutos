@@ -15,19 +15,16 @@ public class Cart {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private Long userId; // Cada usuário tem um carrinho.
+    private Long userId;
 
-    // Um carrinho tem muitos itens. 'cascade = CascadeType.ALL' significa que se o carrinho for
-    // salvo/atualizado/removido, os itens também serão. 'orphanRemoval = true' remove itens
-    // que não estão mais associados a este carrinho.
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "cart_id") // Chave estrangeira na tabela CartItem.
+    @JoinColumn(name = "cart_id")
     private List<CartItem> items = new ArrayList<>();
 
     private BigDecimal total = BigDecimal.ZERO;
     private BigDecimal discount = BigDecimal.ZERO;
-    private BigDecimal freight = BigDecimal.ZERO; // Frete (simplificado).
+    private BigDecimal freight = BigDecimal.ZERO;
 
-    // O status pode ser 'ACTIVE' ou 'CHECKED_OUT'.
     private String status = "ACTIVE";
 }

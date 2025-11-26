@@ -24,7 +24,6 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;
         } catch (Exception ex) {
-            // Logar a exceção seria ideal em um app real
         }
         return false;
     }

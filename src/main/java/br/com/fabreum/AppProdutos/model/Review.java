@@ -20,14 +20,13 @@ public class Review {
     @Column(nullable = false)
     private Long userId;
 
-    // Garante que a avaliação seja entre 1 e 5.
+
     @Column(nullable = false)
     private int rating;
 
     @Lob
     private String comment;
 
-    // Garante que um usuário só possa fazer um review por produto em um determinado pedido.
     @Column(nullable = false)
     private Long orderId;
 

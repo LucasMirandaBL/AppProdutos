@@ -32,9 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 
-                // Como este serviço não tem acesso direto ao banco de dados de usuários,
-                // criamos um UserDetails simples com base nas informações do token.
-                // Para a autorização funcionar, o ideal é que o 'auth-service' inclua os papéis (roles) como claims no token.
                 UserDetails userDetails = new User(username, "", Collections.emptyList());
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

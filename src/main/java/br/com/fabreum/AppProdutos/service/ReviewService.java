@@ -27,20 +27,15 @@ public class ReviewService {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Adiciona um review a um produto.
-     */
     @Transactional
     public Review addReview(Review reviewRequest) {
         Long userId = usuarioService.getCurrentUserId();
 
-        // Regra: Apenas quem comprou pode avaliar.
         boolean hasPurchased = orderItemRepository.existsByUserIdAndProductId(userId, reviewRequest.getProductId());
         if (!hasPurchased) {
             throw new IllegalStateException("Você só pode avaliar produtos que comprou.");
         }
 
-        // Regra: Máximo 1 review por produto por pedido.
         boolean hasReviewed = reviewRepository.existsByUserIdAndProductIdAndOrderId(userId, reviewRequest.getProductId(), reviewRequest.getOrderId());
         if (hasReviewed) {
             throw new IllegalStateException("Você já avaliou este produto para este pedido.");
@@ -55,7 +50,6 @@ public class ReviewService {
 
         Review savedReview = reviewRepository.save(review);
 
-        // Após salvar o review, recalcula a média de avaliação do produto.
         updateProductAverageRating(reviewRequest.getProductId());
 
         return savedReview;

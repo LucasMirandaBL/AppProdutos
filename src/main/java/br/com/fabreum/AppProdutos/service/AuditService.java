@@ -16,20 +16,12 @@ public class AuditService {
     private AuditLogRepository auditLogRepository;
 
     @Autowired
-    private ObjectMapper objectMapper; // ObjectMapper é usado para converter objetos Java em JSON.
+    private ObjectMapper objectMapper;
 
-    /**
-     * Cria um registro de auditoria.
-     * @param entity O objeto que foi modificado.
-     * @param action A ação realizada ("CREATE", "UPDATE", "DELETE").
-     * @param beforeState O estado do objeto antes da mudança.
-     * @param afterState O estado do objeto depois da mudança.
-     * @param who O nome do usuário que realizou a ação.
-     */
     public void log(Object entity, String action, Object beforeState, Object afterState, String who) {
         AuditLog log = new AuditLog();
         log.setEntityType(entity.getClass().getSimpleName());
-        // Supondo que toda entidade tenha um método getId()
+
         try {
             log.setEntityId((Long) entity.getClass().getMethod("getId").invoke(entity));
         } catch (Exception e) {
@@ -37,8 +29,8 @@ public class AuditService {
         }
 
         log.setAction(action);
-        log.setWho(who);
-        log.setWhen(LocalDateTime.now());
+        log.setQuemRealizou(who);
+        log.setDataHora(LocalDateTime.now());
 
         try {
             log.setBeforeJson(beforeState != null ? objectMapper.writeValueAsString(beforeState) : null);
