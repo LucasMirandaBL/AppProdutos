@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "orders") // 'order' é uma palavra reservada em SQL, então nomeamos a tabela como 'orders'.
+@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class Order {
     private OrderStatus status;
 
     @Lob
-    private String address; // Endereço de entrega, simplificado como uma string.
+    private String address;
 
     @CreationTimestamp
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

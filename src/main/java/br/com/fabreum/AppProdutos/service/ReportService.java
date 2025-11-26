@@ -13,12 +13,8 @@ public class ReportService {
     @Autowired
     private ProductRepository productRepository;
 
-    // Outros repositórios (Order, Promotion) seriam injetados aqui.
 
     public List<Produtos> getLowStockProducts(int threshold) {
         return productRepository.findByStockQuantityLessThanEqual(threshold);
     }
-
-    // Métodos para outros relatórios (vendas, top produtos, etc.) seriam implementados aqui,
-    // geralmente com queries customizadas nos repositórios.
 }

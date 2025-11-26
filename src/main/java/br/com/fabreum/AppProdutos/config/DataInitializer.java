@@ -8,10 +8,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Componente para popular o banco de dados com dados iniciais na inicialização da aplicação.
- * Útil para testes e demonstração.
- */
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -24,29 +20,29 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Criar usuário ADMIN na API de autenticação
-        createUserInAuthService("admin", "admin123", Set.of("ROLE_ADMIN"));
+        createUserInAuthService("admin@gmail.com", "admin",  "admin123", "ROLE_ADMIN");
         // Criar usuário SELLER na API de autenticação
-        createUserInAuthService("seller", "seller123", Set.of("ROLE_SELLER"));
+        createUserInAuthService("seller@gmail.com", "seller","seller123", "ROLE_SELLER");
         // Criar usuário CUSTOMER na API de autenticação
-        createUserInAuthService("customer", "customer123", Set.of("ROLE_CUSTOMER"));
+        createUserInAuthService("customer@gmail.com", "customer","customer123", "ROLE_CUSTOMER");
     }
 
-    private void createUserInAuthService(String username, String password, Set<String> roles) {
-        // Construct the request body
+    private void createUserInAuthService(String email, String nome, String password, String role) {
         Map<String, Object> userCreationRequest = Map.of(
-            "username", username,
+            "email", email,
+            "nome", nome,
             "password", password,
-            "roles", roles // Assuming the external API accepts a list of roles
+            "role", role
         );
 
-        // Make the POST request to the external auth service
+
         webClient.post()
-            .uri("/auth/register") // Assuming /users/register is the endpoint for user creation
+            .uri("/auth/register")
             .bodyValue(userCreationRequest)
             .retrieve()
-            .bodyToMono(String.class) // Assuming a simple string response or success indicator
-            .doOnSuccess(response -> System.out.println("User " + username + " created successfully in auth service."))
-            .doOnError(e -> System.err.println("Failed to create user " + username + " in auth service: " + e.getMessage()))
-            .block(); // Block for simplicity in a CommandLineRunner, consider async in production
+            .bodyToMono(String.class)
+            .doOnSuccess(response -> System.out.println("User " + nome + " created successfully in auth service."))
+            .doOnError(e -> System.err.println("Failed to create user " + nome + " in auth service: " + e.getMessage()))
+            .block();
     }
 }

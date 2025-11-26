@@ -13,18 +13,18 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String entityType; // Ex: "Product"
-    private Long entityId;     // Ex: 123
+    private String entityType;
+    private Long entityId;
 
-    private String action;     // Ex: "CREATE", "UPDATE", "DELETE"
+    private String action;
 
-    @Lob // Armazena o estado do objeto ANTES da mudança, em formato JSON.
+    @Lob
     private String beforeJson;
 
-    @Lob // Armazena o estado do objeto DEPOIS da mudança, em formato JSON.
+    @Lob
     private String afterJson;
 
-    private String who; // Quem realizou a ação.
+    private String quemRealizou;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime when; // Quando a ação foi realizada.
+    private LocalDateTime dataHora;
 }

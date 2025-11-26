@@ -21,8 +21,6 @@ spring:
 # Configurações do JWT
 app:
   jwt:
-    # Segredo para assinar o token. Em produção, use uma string longa e complexa e guarde-a de forma segura.
-    # Você pode gerar uma chave segura em sites como: https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx
     secret: "4z6B8E(H+MbQeThWmZq4t7w!z%C*F-JaNdRgUjXn2r5u8x/A?D(G+KbPeShVmYp3"
     # Tempo de expiração do token de acesso (em milissegundos). 3600000 ms = 1 hora
     expiration-ms: 3600000

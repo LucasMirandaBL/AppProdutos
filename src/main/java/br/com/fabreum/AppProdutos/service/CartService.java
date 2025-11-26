@@ -25,18 +25,12 @@ public class CartService {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Obtém o carrinho ativo do usuário logado. Se não existir, cria um novo.
-     */
     public Cart getCart() {
         Long userId = usuarioService.getCurrentUserId();
         return cartRepository.findByUserId(userId)
             .orElseGet(() -> createCart(userId));
     }
 
-    /**
-     * Adiciona um item ao carrinho.
-     */
     @Transactional
     public Cart addItem(CartItem itemRequest) {
         Cart cart = getCart();
@@ -47,7 +41,6 @@ public class CartService {
             throw new IllegalStateException("Produto indisponível ou sem estoque suficiente.");
         }
 
-        // Verifica se o item já está no carrinho para apenas atualizar a quantidade.
         Optional<CartItem> existingItem = cart.getItems().stream()
             .filter(item -> item.getProductId().equals(itemRequest.getProductId()))
             .findFirst();
@@ -59,7 +52,7 @@ public class CartService {
             CartItem newItem = new CartItem();
             newItem.setProductId(product.getId());
             newItem.setQuantity(itemRequest.getQuantity());
-            newItem.setPriceSnapshot(product.getPrice()); // Captura o preço no momento da adição.
+            newItem.setPriceSnapshot(product.getPrice());
             cart.getItems().add(newItem);
         }
 

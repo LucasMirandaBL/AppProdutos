@@ -20,31 +20,24 @@ public class PromotionService {
     @Autowired
     private CartService cartService;
 
-    /**
-     * Aplica um cupom de desconto ao carrinho do usuário.
-     */
     @Transactional
     public Cart applyCoupon(String code) {
         Cart cart = cartService.getCart();
         Promotion promotion = promotionRepository.findByCode(code)
             .orElseThrow(() -> new ResourceNotFoundException("Cupom inválido."));
 
-        // Validações do cupom
         if (promotion.getValidTo().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Este cupom expirou.");
         }
         if (promotion.getUsedCount() >= promotion.getUsageLimit()) {
             throw new IllegalStateException("Este cupom atingiu o limite de usos.");
         }
-        // Aqui iria a lógica para verificar se o cupom se aplica aos itens do carrinho (applicableTo)
-        // Para simplificar, vamos assumir que todos os cupons se aplicam ao carrinho todo.
 
         BigDecimal discountAmount = calculateDiscount(cart, promotion);
         cart.setDiscount(discountAmount);
 
-        // Recalcula o total final
         BigDecimal finalTotal = cart.getTotal().subtract(discountAmount);
-        cart.setTotal(finalTotal.max(BigDecimal.ZERO)); // O total não pode ser negativo.
+        cart.setTotal(finalTotal.max(BigDecimal.ZERO));
 
         promotion.setUsedCount(promotion.getUsedCount() + 1);
         promotionRepository.save(promotion);
@@ -54,10 +47,10 @@ public class PromotionService {
 
     private BigDecimal calculateDiscount(Cart cart, Promotion promotion) {
         if (promotion.getType() == PromotionType.PERCENTUAL) {
-            BigDecimal discount = cart.getTotal().multiply(promotion.getValue().divide(new BigDecimal("100")));
+            BigDecimal discount = cart.getTotal().multiply(promotion.getValor().divide(new BigDecimal("100")));
             return discount;
         } else if (promotion.getType() == PromotionType.VALOR_FIXO) {
-            return promotion.getValue();
+            return promotion.getValor();
         }
         return BigDecimal.ZERO;
     }

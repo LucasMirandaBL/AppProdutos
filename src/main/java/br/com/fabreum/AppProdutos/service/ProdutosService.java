@@ -1,5 +1,6 @@
 package br.com.fabreum.AppProdutos.service;
 
+import br.com.fabreum.AppProdutos.controller.dto.ProdutoDto;
 import br.com.fabreum.AppProdutos.model.Produtos;
 import br.com.fabreum.AppProdutos.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +16,14 @@ public class ProdutosService {
 
     private final ProductRepository produtosRepository;
 
-    public Optional<Produtos> atualizaProduto(Long id, br.com.fabreum.AppProdutos.controller.dto.ProdutoDto produtoDto) {
+    public Optional<Produtos> atualizaProduto(Long id, ProdutoDto produtoDto) {
         log.info("Atualizando produto: {}", produtoDto);
         final var produtoExistente = produtosRepository.findById(id);
         produtoExistente.ifPresent(p -> {
             p.setName(produtoDto.getName());
             p.setDescription(produtoDto.getDescription());
             p.setPrice(produtoDto.getPrice());
+            p.setStockQuantity(produtoDto.getStockQuantity());
             produtosRepository.saveAndFlush(p);
         });
         return produtoExistente;
